@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Recommendations</title>
+</head>
+<body>
+  <div id="ai-recommendations-widget">
+    <h3>Recommended for you</h3>
+    <div id="recommendations-container">Loading...</div>
+  </div>
+
+  <script>
+    async function renderRecommendations() {
+      const container = document.getElementById('recommendations-container');
+      container.innerHTML = 'Loading...';
+
+      try {
+        const res = await fetch('/api/recommendations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ context: 'Interested in Frank Lloyd Wright lighting and design' })
+        });
+
+        const data = await res.json();
+
+        container.innerHTML = '';
+        data.products.forEach(p => {
+          const img = p.images.edges[0]?.node;
+          const div = document.createElement('div');
+          div.className = 'product-card';
+          div.innerHTML = `
+            <a href="/products/${p.handle}">
+              <img src="${img?.url || 'https://via.placeholder.com/150'}" alt="${img?.altText || p.title}" />
+              <p>${p.title}</p>
+            </a>
+          `;
+          container.appendChild(div);
+        });
+
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = 'Could not load recommendations.';
+      }
+    }
+
+    renderRecommendations();
+  </script>
+
+  <style>
+    #ai-recommendations-widget {
+      margin-top: 40px;
+    }
+    .product-card {
+      display: inline-block;
+      margin-right: 16px;
+      text-align: center;
+    }
+    .product-card img {
+      width: 150px;
+      border-radius: 5px;
+    }
+  </style>
+</body>
+</html>
